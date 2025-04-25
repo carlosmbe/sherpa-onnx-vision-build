@@ -27,6 +27,9 @@ set(sources
   offline-ctc-fst-decoder.cc
   offline-ctc-greedy-search-decoder.cc
   offline-ctc-model.cc
+  offline-fire-red-asr-greedy-search-decoder.cc
+  offline-fire-red-asr-model-config.cc
+  offline-fire-red-asr-model.cc
   offline-lm-config.cc
   offline-lm.cc
   offline-model-config.cc
@@ -148,6 +151,17 @@ list(APPEND sources
   online-punctuation-model-config.cc
   online-punctuation.cc
 )
+if(SHERPA_ONNX_ENABLE_RKNN)
+  list(APPEND sources
+    ./rknn/online-stream-rknn.cc
+    ./rknn/online-transducer-greedy-search-decoder-rknn.cc
+    ./rknn/online-transducer-modified-beam-search-decoder-rknn.cc
+    ./rknn/online-zipformer-ctc-model-rknn.cc
+    ./rknn/online-zipformer-transducer-model-rknn.cc
+    ./rknn/utils.cc
+  )
+
+endif()
 
 if(SHERPA_ONNX_ENABLE_TTS)
   list(APPEND sources
@@ -225,6 +239,14 @@ if(SHERPA_ONNX_ENABLE_GPU)
   target_link_libraries(sherpa-onnx-core
     onnxruntime_providers_shared
   )
+endif()
+
+if(SHERPA_ONNX_ENABLE_RKNN)
+  if(DEFINED ENV{SHERPA_ONNX_RKNN_TOOLKIT2_LIB_DIR})
+    target_link_libraries(sherpa-onnx-core -L$ENV{SHERPA_ONNX_RKNN_TOOLKIT2_LIB_DIR} -lrknnrt)
+  else()
+    target_link_libraries(sherpa-onnx-core rknnrt)
+  endif()
 endif()
 
 if(BUILD_SHARED_LIBS AND NOT DEFINED onnxruntime_lib_files)
@@ -549,6 +571,7 @@ if(SHERPA_ONNX_ENABLE_TESTS)
     context-graph-test.cc
     packed-sequence-test.cc
     pad-sequence-test.cc
+    regex-lang-test.cc
     slice-test.cc
     stack-test.cc
     text-utils-test.cc

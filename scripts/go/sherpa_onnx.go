@@ -239,9 +239,12 @@ func NewOnlineRecognizer(config *OnlineRecognizerConfig) *OnlineRecognizer {
 	defer C.free(unsafe.Pointer(c.ctc_fst_decoder_config.graph))
 	c.ctc_fst_decoder_config.max_active = C.int(config.CtcFstDecoderConfig.MaxActive)
 
+	impl := C.SherpaOnnxCreateOnlineRecognizer(&c)
+	if impl == nil {
+		return nil
+	}
 	recognizer := &OnlineRecognizer{}
-	recognizer.impl = C.SherpaOnnxCreateOnlineRecognizer(&c)
-
+	recognizer.impl = impl
 	return recognizer
 }
 
@@ -382,6 +385,11 @@ type OfflineWhisperModelConfig struct {
 	TailPaddings int
 }
 
+type OfflineFireRedAsrModelConfig struct {
+	Encoder string
+	Decoder string
+}
+
 type OfflineMoonshineModelConfig struct {
 	Preprocessor    string
 	Encoder         string
@@ -413,6 +421,7 @@ type OfflineModelConfig struct {
 	Tdnn       OfflineTdnnModelConfig
 	SenseVoice OfflineSenseVoiceModelConfig
 	Moonshine  OfflineMoonshineModelConfig
+	FireRedAsr OfflineFireRedAsrModelConfig
 	Tokens     string // Path to tokens.txt
 
 	// Number of threads to use for neural network computation
@@ -535,6 +544,12 @@ func NewOfflineRecognizer(config *OfflineRecognizerConfig) *OfflineRecognizer {
 	c.model_config.moonshine.cached_decoder = C.CString(config.ModelConfig.Moonshine.CachedDecoder)
 	defer C.free(unsafe.Pointer(c.model_config.moonshine.cached_decoder))
 
+	c.model_config.fire_red_asr.encoder = C.CString(config.ModelConfig.FireRedAsr.Encoder)
+	defer C.free(unsafe.Pointer(c.model_config.fire_red_asr.encoder))
+
+	c.model_config.fire_red_asr.decoder = C.CString(config.ModelConfig.FireRedAsr.Decoder)
+	defer C.free(unsafe.Pointer(c.model_config.fire_red_asr.decoder))
+
 	c.model_config.tokens = C.CString(config.ModelConfig.Tokens)
 	defer C.free(unsafe.Pointer(c.model_config.tokens))
 
@@ -580,8 +595,12 @@ func NewOfflineRecognizer(config *OfflineRecognizerConfig) *OfflineRecognizer {
 	c.rule_fars = C.CString(config.RuleFars)
 	defer C.free(unsafe.Pointer(c.rule_fars))
 
+	impl := C.SherpaOnnxCreateOfflineRecognizer(&c)
+	if impl == nil {
+		return nil
+	}
 	recognizer := &OfflineRecognizer{}
-	recognizer.impl = C.SherpaOnnxCreateOfflineRecognizer(&c)
+	recognizer.impl = impl
 
 	return recognizer
 }
@@ -640,7 +659,7 @@ func (s *OfflineStream) GetResult() *OfflineRecognizerResult {
 	result.Emotion = C.GoString(p.emotion)
 	result.Event = C.GoString(p.event)
 	result.Tokens = make([]string, n)
-	tokens := (*[1 << 28]*C.char)(unsafe.Pointer(p.tokens_arr))[:n:n]
+	tokens := unsafe.Slice(p.tokens_arr, n)
 	for i := 0; i < n; i++ {
 		result.Tokens[i] = C.GoString(tokens[i])
 	}
@@ -648,7 +667,7 @@ func (s *OfflineStream) GetResult() *OfflineRecognizerResult {
 		return result
 	}
 	result.Timestamps = make([]float32, n)
-	timestamps := (*[1 << 28]C.float)(unsafe.Pointer(p.timestamps))[:n:n]
+	timestamps := unsafe.Slice(p.timestamps, n)
 	for i := 0; i < n; i++ {
 		result.Timestamps[i] = float32(timestamps[i])
 	}
@@ -816,9 +835,12 @@ func NewOfflineTts(config *OfflineTtsConfig) *OfflineTts {
 	c.model.provider = C.CString(config.Model.Provider)
 	defer C.free(unsafe.Pointer(c.model.provider))
 
+	impl := C.SherpaOnnxCreateOfflineTts(&c)
+	if impl == nil {
+		return nil
+	}
 	tts := &OfflineTts{}
-	tts.impl = C.SherpaOnnxCreateOfflineTts(&c)
-
+	tts.impl = impl
 	return tts
 }
 
@@ -836,7 +858,7 @@ func (tts *OfflineTts) Generate(text string, sid int, speed float32) *GeneratedA
 
 	// see https://stackoverflow.com/questions/48756732/what-does-1-30c-yourtype-do-exactly-in-cgo
 	// :n:n means 0:n:n, means low:high:capacity
-	samples := (*[1 << 28]C.float)(unsafe.Pointer(audio.samples))[:n:n]
+	samples := unsafe.Slice(audio.samples, n)
 	// copy(ans.Samples, samples)
 	for i := 0; i < n; i++ {
 		ans.Samples[i] = float32(samples[i])
@@ -899,7 +921,7 @@ func (buffer *CircularBuffer) Get(start int, n int) []float32 {
 
 	result := make([]float32, n)
 
-	p := (*[1 << 28]C.float)(unsafe.Pointer(samples))[:n:n]
+	p := unsafe.Slice(samples, n)
 	for i := 0; i < n; i++ {
 		result[i] = float32(p[i])
 	}
@@ -951,9 +973,12 @@ func NewVoiceActivityDetector(config *VadModelConfig, bufferSizeInSeconds float3
 
 	c.debug = C.int(config.Debug)
 
+	impl := C.SherpaOnnxCreateVoiceActivityDetector(&c, C.float(bufferSizeInSeconds))
+	if impl == nil {
+		return nil
+	}
 	vad := &VoiceActivityDetector{}
-	vad.impl = C.SherpaOnnxCreateVoiceActivityDetector(&c, C.float(bufferSizeInSeconds))
-
+	vad.impl = impl
 	return vad
 }
 
@@ -992,7 +1017,7 @@ func (vad *VoiceActivityDetector) Front() *SpeechSegment {
 	n := int(f.n)
 	ans.Samples = make([]float32, n)
 
-	samples := (*[1 << 28]C.float)(unsafe.Pointer(f.samples))[:n:n]
+	samples := unsafe.Slice(f.samples, n)
 
 	for i := 0; i < n; i++ {
 		ans.Samples[i] = float32(samples[i])
@@ -1107,9 +1132,12 @@ func NewSpeakerEmbeddingExtractor(config *SpeakerEmbeddingExtractorConfig) *Spea
 	c.provider = C.CString(config.Provider)
 	defer C.free(unsafe.Pointer(c.provider))
 
+	impl := C.SherpaOnnxCreateSpeakerEmbeddingExtractor(&c)
+	if impl == nil {
+		return nil
+	}
 	ex := &SpeakerEmbeddingExtractor{}
-	ex.impl = C.SherpaOnnxCreateSpeakerEmbeddingExtractor(&c)
-
+	ex.impl = impl
 	return ex
 }
 
@@ -1143,7 +1171,7 @@ func (ex *SpeakerEmbeddingExtractor) Compute(stream *OnlineStream) []float32 {
 
 	// see https://stackoverflow.com/questions/48756732/what-does-1-30c-yourtype-do-exactly-in-cgo
 	// :n:n means 0:n:n, means low:high:capacity
-	c := (*[1 << 28]C.float)(unsafe.Pointer(embedding))[:n:n]
+	c := unsafe.Slice(embedding, n)
 
 	for i := 0; i < n; i++ {
 		ans[i] = float32(c[i])
@@ -1159,8 +1187,12 @@ type SpeakerEmbeddingManager struct {
 // The user has to invoke [DeleteSpeakerEmbeddingManager]() to free the returned
 // value to avoid memory leak
 func NewSpeakerEmbeddingManager(dim int) *SpeakerEmbeddingManager {
+	impl := C.SherpaOnnxCreateSpeakerEmbeddingManager(C.int(dim))
+	if impl == nil {
+		return nil
+	}
 	m := &SpeakerEmbeddingManager{}
-	m.impl = C.SherpaOnnxCreateSpeakerEmbeddingManager(C.int(dim))
+	m.impl = impl
 	return m
 }
 
@@ -1241,7 +1273,7 @@ func (m *SpeakerEmbeddingManager) AllSpeakers() []string {
 	}
 
 	// https://stackoverflow.com/questions/62012070/convert-array-of-strings-from-cgo-in-go
-	p := (*[1 << 28]*C.char)(unsafe.Pointer(all_speakers))[:n:n]
+	p := unsafe.Slice(all_speakers, n)
 
 	ans := make([]string, n)
 
@@ -1275,7 +1307,7 @@ func ReadWave(filename string) *Wave {
 
 	ans := &Wave{}
 	ans.SampleRate = int(w.sample_rate)
-	samples := (*[1 << 28]C.float)(unsafe.Pointer(w.samples))[:n:n]
+	samples := unsafe.Slice(w.samples, n)
 
 	ans.Samples = make([]float32, n)
 
@@ -1396,7 +1428,7 @@ func (sd *OfflineSpeakerDiarization) Process(samples []float32) []OfflineSpeaker
 
 	ans := make([]OfflineSpeakerDiarizationSegment, n)
 
-	p := (*[1 << 28]C.struct_SherpaOnnxOfflineSpeakerDiarizationSegment)(unsafe.Pointer(s))[:n:n]
+	p := unsafe.Slice(s, n)
 
 	for i := 0; i < n; i++ {
 		ans[i].Start = float32(p[i].start)
@@ -1435,9 +1467,12 @@ func NewOfflinePunctuation(config *OfflinePunctuationConfig) *OfflinePunctuation
 	cfg.model.provider = C.CString(config.Model.Provider)
 	defer C.free(unsafe.Pointer(cfg.model.provider))
 
+	impl := C.SherpaOnnxCreateOfflinePunctuation(&cfg)
+	if impl == nil {
+		return nil
+	}
 	punc := &OfflinePunctuation{}
-	punc.impl = C.SherpaOnnxCreateOfflinePunctuation(&cfg)
-
+	punc.impl = impl
 	return punc
 }
 
@@ -1448,7 +1483,7 @@ func DeleteOfflinePunc(punc *OfflinePunctuation) {
 
 func (punc *OfflinePunctuation) AddPunct(text string) string {
 	p := C.SherpaOfflinePunctuationAddPunct(punc.impl, C.CString(text))
-	defer C.free(unsafe.Pointer(p))
+	defer C.SherpaOfflinePunctuationFreeText(p)
 
 	text_with_punct := C.GoString(p)
 
@@ -1544,9 +1579,12 @@ func NewKeywordSpotter(config *KeywordSpotterConfig) *KeywordSpotter {
 
 	c.keywords_buf_size = C.int(config.KeywordsBufSize)
 
+	impl := C.SherpaOnnxCreateKeywordSpotter(&c)
+	if impl == nil {
+		return nil
+	}
 	spotter := &KeywordSpotter{}
-	spotter.impl = C.SherpaOnnxCreateKeywordSpotter(&c)
-
+	spotter.impl = impl
 	return spotter
 }
 
@@ -1605,5 +1643,100 @@ func (spotter *KeywordSpotter) GetResult(s *OnlineStream) *KeywordSpotterResult 
 	defer C.SherpaOnnxDestroyKeywordResult(p)
 	result := &KeywordSpotterResult{}
 	result.Keyword = C.GoString(p.keyword)
+	return result
+}
+
+// Configuration for the audio tagging.
+type OfflineZipformerAudioTaggingModelConfig struct {
+	Model string
+}
+
+type AudioTaggingModelConfig struct {
+	Zipformer  OfflineZipformerAudioTaggingModelConfig
+	Ced        string
+	NumThreads int32
+	Debug      int32
+	Provider   string
+}
+
+type AudioTaggingConfig struct {
+	Model  AudioTaggingModelConfig
+	Labels string
+	TopK   int32
+}
+
+type AudioTagging struct {
+	impl *C.struct_SherpaOnnxAudioTagging
+}
+
+type AudioEvent struct {
+	Name  string
+	Index int
+	Prob  float32
+}
+
+func DeleteAudioTagging(tagging *AudioTagging) {
+	C.SherpaOnnxDestroyAudioTagging(tagging.impl)
+	tagging.impl = nil
+}
+
+// The user is responsible to invoke [DeleteAudioTagging]() to free
+// the returned tagger to avoid memory leak
+func NewAudioTagging(config *AudioTaggingConfig) *AudioTagging {
+	c := C.struct_SherpaOnnxAudioTaggingConfig{}
+
+	c.model.zipformer.model = C.CString(config.Model.Zipformer.Model)
+	defer C.free(unsafe.Pointer(c.model.zipformer.model))
+
+	c.model.ced = C.CString(config.Model.Ced)
+	defer C.free(unsafe.Pointer(c.model.ced))
+
+	c.model.num_threads = C.int(config.Model.NumThreads)
+
+	c.model.provider = C.CString(config.Model.Provider)
+	defer C.free(unsafe.Pointer(c.model.provider))
+
+	c.model.debug = C.int(config.Model.Debug)
+
+	c.labels = C.CString(config.Labels)
+	defer C.free(unsafe.Pointer(c.labels))
+
+	c.top_k = C.int(config.TopK)
+
+	impl := C.SherpaOnnxCreateAudioTagging(&c)
+	if impl == nil {
+		return nil
+	}
+	tagging := &AudioTagging{}
+	tagging.impl = impl
+	return tagging
+}
+
+// The user is responsible to invoke [DeleteOfflineStream]() to free
+// the returned stream to avoid memory leak
+func NewAudioTaggingStream(tagging *AudioTagging) *OfflineStream {
+	stream := &OfflineStream{}
+	stream.impl = C.SherpaOnnxAudioTaggingCreateOfflineStream(tagging.impl)
+	return stream
+}
+
+func (tagging *AudioTagging) Compute(s *OfflineStream, topK int32) []AudioEvent {
+	r := C.SherpaOnnxAudioTaggingCompute(tagging.impl, s.impl, C.int(topK))
+	defer C.SherpaOnnxAudioTaggingFreeResults(r)
+	result := make([]AudioEvent, 0)
+
+	p := (*[1 << 25]*C.struct_SherpaOnnxAudioEvent)(unsafe.Pointer(r))
+	i := 0
+	for {
+		if p[i] == nil {
+			break
+		}
+		result = append(result, AudioEvent{
+			Name:  C.GoString(p[i].name),
+			Index: int(p[i].index),
+			Prob:  float32(p[i].prob),
+		})
+		i += 1
+	}
 	return result
 }

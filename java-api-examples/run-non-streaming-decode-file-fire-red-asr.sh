@@ -25,13 +25,14 @@ if [ ! -f ../sherpa-onnx/java-api/build/sherpa-onnx.jar ]; then
   popd
 fi
 
-if [ ! -f ./sherpa-onnx-punct-ct-transformer-zh-en-vocab272727-2024-04-12/model.onnx ]; then
-  curl -SL -O https://github.com/k2-fsa/sherpa-onnx/releases/download/punctuation-models/sherpa-onnx-punct-ct-transformer-zh-en-vocab272727-2024-04-12.tar.bz2
-  tar xvf sherpa-onnx-punct-ct-transformer-zh-en-vocab272727-2024-04-12.tar.bz2
-  rm sherpa-onnx-punct-ct-transformer-zh-en-vocab272727-2024-04-12.tar.bz2
+if [ ! -f ./sherpa-onnx-fire-red-asr-large-zh_en-2025-02-16/encoder.int8.onnx ]; then
+  curl -SL -O https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-fire-red-asr-large-zh_en-2025-02-16.tar.bz2
+  tar xvf sherpa-onnx-fire-red-asr-large-zh_en-2025-02-16.tar.bz2
+  rm sherpa-onnx-fire-red-asr-large-zh_en-2025-02-16.tar.bz2
+  ls -lh sherpa-onnx-fire-red-asr-large-zh_en-2025-02-16
 fi
 
 java \
   -Djava.library.path=$PWD/../build/lib \
   -cp ../sherpa-onnx/java-api/build/sherpa-onnx.jar \
-  ./AddPunctuation.java
+  NonStreamingDecodeFileFireRedAsr.java

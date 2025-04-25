@@ -460,6 +460,12 @@ static sherpa_onnx::OfflineRecognizerConfig GetOfflineRecognizerConfig(
   recognizer_config.model_config.moonshine.cached_decoder =
       SHERPA_ONNX_OR(config->model_config.moonshine.cached_decoder, "");
 
+  recognizer_config.model_config.fire_red_asr.encoder =
+      SHERPA_ONNX_OR(config->model_config.fire_red_asr.encoder, "");
+
+  recognizer_config.model_config.fire_red_asr.decoder =
+      SHERPA_ONNX_OR(config->model_config.fire_red_asr.decoder, "");
+
   recognizer_config.lm_config.model =
       SHERPA_ONNX_OR(config->lm_config.model, "");
   recognizer_config.lm_config.scale =
@@ -530,6 +536,13 @@ const SherpaOnnxOfflineStream *SherpaOnnxCreateOfflineStream(
     const SherpaOnnxOfflineRecognizer *recognizer) {
   SherpaOnnxOfflineStream *stream =
       new SherpaOnnxOfflineStream(recognizer->impl->CreateStream());
+  return stream;
+}
+
+const SherpaOnnxOfflineStream *SherpaOnnxCreateOfflineStreamWithHotwords(
+    const SherpaOnnxOfflineRecognizer *recognizer, const char *hotwords) {
+  SherpaOnnxOfflineStream *stream =
+      new SherpaOnnxOfflineStream(recognizer->impl->CreateStream(hotwords));
   return stream;
 }
 

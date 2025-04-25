@@ -214,6 +214,11 @@ struct SHERPA_ONNX_API OfflineWhisperModelConfig {
   int32_t tail_paddings = -1;
 };
 
+struct SHERPA_ONNX_API OfflineFireRedAsrModelConfig {
+  std::string encoder;
+  std::string decoder;
+};
+
 struct SHERPA_ONNX_API OfflineTdnnModelConfig {
   std::string model;
 };
@@ -248,6 +253,7 @@ struct SHERPA_ONNX_API OfflineModelConfig {
   std::string telespeech_ctc;
   OfflineSenseVoiceModelConfig sense_voice;
   OfflineMoonshineModelConfig moonshine;
+  OfflineFireRedAsrModelConfig fire_red_asr;
 };
 
 struct SHERPA_ONNX_API OfflineLMConfig {
@@ -300,6 +306,8 @@ class SHERPA_ONNX_API OfflineRecognizer
   void Destroy(const SherpaOnnxOfflineRecognizer *p) const;
 
   OfflineStream CreateStream() const;
+
+  OfflineStream CreateStream(const std::string &hotwords) const;
 
   void Decode(const OfflineStream *s) const;
 

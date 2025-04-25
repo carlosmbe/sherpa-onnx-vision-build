@@ -1,3 +1,67 @@
+## 1.10.46
+
+# Fix kokoro lexicon. (#1886)
+# speaker-identification-with-vad-non-streaming-asr.py Lack of support for sense_voice. (#1884)
+# Fix generating Chinese lexicon for Kokoro TTS 1.0 (#1888)
+# Reduce vad-whisper-c-api example code. (#1891)
+# JNI Exception Handling (#1452)
+# Fix #1901: UnicodeEncodeError running export_bpe_vocab.py (#1902)
+# Fix publishing pre-built windows libraries (#1905)
+# Fixing Whisper Model Token Normalization (#1904)
+# feat: add mic example for better compatibility (#1909)
+# Add onnxruntime 1.18.1 for Linux aarch64 GPU (#1914)
+# Add C++ API for streaming zipformer ASR on RK NPU (#1908)
+# change [1<<28] to [1<<10], to fix build issues on GOARCH=386 that [1<<28] too large (#1916)
+# Flutter Config toJson/fromJson (#1893)
+# Fix publishing linux pre-built artifacts (#1919)
+# go.mod set to use go 1.17, and use unsafe.Slice to optimize the code (#1920)
+# fix: AddPunct panic for Go(#1921)
+# Fix publishing macos pre-built artifacts (#1922)
+# Minor fixes for rknn (#1925)
+# Build wheels for rknn linux aarch64 (#1928)
+
+## 1.10.45
+
+* [update] fixed bug: create golang instance succeed while the c struct create failed (#1860)
+* fixed typo in RTF calculations (#1861)
+* Export FireRedASR to sherpa-onnx. (#1865)
+* Add C++ and Python API for FireRedASR AED models (#1867)
+* Add Kotlin and Java API for FireRedAsr AED model (#1870)
+* Add C API for FireRedAsr AED model. (#1871)
+* Add CXX API for FireRedAsr (#1872)
+* Add JavaScript API (node-addon) for FireRedAsr (#1873)
+* Add JavaScript API (WebAssembly) for FireRedAsr model. (#1874)
+* Add C# API for FireRedAsr Model (#1875)
+* Add C# API for FireRedAsr Model (#1875)
+* Add Swift API for FireRedAsr AED Model (#1876)
+* Add Dart API for FireRedAsr AED Model (#1877)
+* Add Go API for FireRedAsr AED Model (#1879)
+* Add Pascal API for FireRedAsr AED Model (#1880)
+
+## 1.10.44
+
+* Export MatchaTTS fa-en model to sherpa-onnx (#1832)
+* Add C++ support for MatchaTTS models not from icefall. (#1834)
+* OfflineRecognizer supports create stream with hotwords (#1833)
+* Add PengChengStarling models to sherpa-onnx (#1835)
+* Support specifying voice in espeak-ng for kokoro tts models. (#1836)
+* Fix: made print sherpa_onnx_loge when it is in debug mode (#1838)
+* Add Go API for audio tagging (#1840)
+* Fix CI (#1841)
+* Update readme to contain links for pre-built Apps (#1853)
+* Modify the model used (#1855)
+* Flutter OnlinePunctuation (#1854)
+* Fix spliting text by languages for kokoro tts. (#1849)
+
+## 1.10.43
+
+* Add MFC example for Kokoro TTS 1.0 (#1815)
+* Update sherpa-onnx-tts.js VitsModelConfig.model can be none (#1817)
+* Fix passing gb2312 encoded strings to tts on Windows (#1819)
+* Support scaling the duration of a pause in TTS. (#1820)
+* Fix building wheels for linux aarch64. (#1821)
+* Fix CI for Linux aarch64. (#1822)
+
 ## 1.10.42
 
 * Fix publishing wheels (#1746)

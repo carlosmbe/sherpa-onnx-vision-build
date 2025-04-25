@@ -33,7 +33,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, macos-13, ubuntu-latest, windows-latest]
+        os: [macos-latest, macos-13, ubuntu-latest, windows-latest, ubuntu-22.04-arm]
 
     steps:
       - uses: actions/checkout@v4
@@ -47,7 +47,7 @@ jobs:
 
       - uses: actions/setup-go@v5
         with:
-          go-version: '>=1.12'
+          go-version: '>=1.17'
 
       - name: Display go version
         shell: bash
@@ -87,7 +87,7 @@ jobs:
             make -j2 install
           fi
 
-          if [[ ${{ matrix.os }} == ubuntu-latest ]]; then
+          if [[ ${{ matrix.os }} == ubuntu-latest || ${{ matrix.os }} == ubuntu-22.04-arm ]]; then
             cp -v ./lib/*.so $upload_dir
             cp -v _deps/onnxruntime-src/lib/libonnxruntime*so* $upload_dir
 
@@ -132,6 +132,15 @@ jobs:
           name: ${{ matrix.os }}-libs
           path: to-upload/
 
+      - name: Test audio tagging
+        shell: bash
+        run: |
+          cd scripts/go/_internal/audio-tagging/
+
+          ./run.sh
+
+          ls -lh
+
       - name: Test Keyword spotting
         shell: bash
         run: |
@@ -150,6 +159,10 @@ jobs:
           cat go.mod
           go build
           ls -lh
+
+          echo "Test FireRedAsr"
+          ./run-fire-red-asr.sh
+          rm -rf sherpa-onnx-fire-red-asr-*
 
           echo "Test Moonshine"
           ./run-moonshine.sh

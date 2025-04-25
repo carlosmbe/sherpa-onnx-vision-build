@@ -1,6 +1,8 @@
 # Introduction
 
-Note: You need `Node >= 18`.
+Note: You need `Node >= 18`. 
+
+Note: For Mac M1 and other silicon chip series, do check the example `test-online-paraformer-microphone-mic.js` 
 
 This directory contains nodejs examples for [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx).
 
@@ -216,6 +218,21 @@ tar xvf sherpa-onnx-whisper-tiny.en.tar.bz2
 node ./test-offline-whisper.js
 ```
 
+## ./test-offline-fire-red-asr.js
+
+[./test-offline-fire-red-asr.js](./test-offline-fire-red-asr.js) demonstrates
+how to decode a file with a FireRedAsr AED model.
+
+You can use the following command to run it:
+
+```bash
+wget https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-fire-red-asr-large-zh_en-2025-02-16.tar.bz2
+tar xvf sherpa-onnx-fire-red-asr-large-zh_en-2025-02-16.tar.bz2
+rm sherpa-onnx-fire-red-asr-large-zh_en-2025-02-16.tar.bz2
+
+node ./test-offline-fire-red-asr.js
+```
+
 ## ./test-offline-moonshine.js
 
 [./test-offline-moonshine.js](./test-offline-moonshine.js) demonstrates
@@ -262,6 +279,25 @@ wget -q https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherp
 rm sherpa-onnx-streaming-paraformer-bilingual-zh-en.tar.bz2
 node ./test-online-paraformer-microphone.js
 ```
+
+
+## ./test-online-paraformer-microphone-mic.js
+
+[./test-online-paraformer-microphone-mic.js](./test-online-paraformer-microphone-mic.js)
+demonstrates how to do real-time speech recognition from microphone
+with a streaming Paraformer model. In the code we use
+[sherpa-onnx-streaming-paraformer-bilingual-zh-en](https://k2-fsa.github.io/sherpa/onnx/pretrained_models/online-paraformer/paraformer-models.html#csukuangfj-sherpa-onnx-streaming-paraformer-bilingual-zh-en-chinese-english).
+
+It uses `mic` for better compatibility, do check its [npm](https://www.npmjs.com/package/mic) before running it.
+
+You can use the following command to run it:
+
+```bash
+wget -q https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-streaming-paraformer-bilingual-zh-en.tar.bz2
+rm sherpa-onnx-streaming-paraformer-bilingual-zh-en.tar.bz2
+node ./test-online-paraformer-microphone-mic.js
+```
+
 
 ## ./test-online-paraformer.js
 [./test-online-paraformer.js](./test-online-paraformer.js) demonstrates

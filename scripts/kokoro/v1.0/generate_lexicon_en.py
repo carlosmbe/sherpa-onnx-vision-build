@@ -2,8 +2,6 @@
 # Copyright    2025  Xiaomi Corp.        (authors: Fangjun Kuang)
 
 import json
-from pypinyin import phrases_dict, pinyin_dict
-from misaki import zh
 from typing import List, Tuple
 
 
@@ -48,26 +46,6 @@ def generate_english_lexicon(kind: str):
     return list(user_defined_lower.items()) + list(lexicon.items())
 
 
-def generate_chinese_lexicon():
-    word_dict = pinyin_dict.pinyin_dict
-    phrases = phrases_dict.phrases_dict
-
-    g2p = zh.ZHG2P()
-    lexicon = []
-
-    for key in word_dict:
-        if not (0x4E00 <= key <= 0x9FFF):
-            continue
-        w = chr(key)
-        tokens: str = g2p(w)
-        lexicon.append((w, tokens))
-
-    for key in phrases:
-        tokens: str = g2p(key)
-        lexicon.append((key, tokens))
-    return lexicon
-
-
 def save(filename: str, lexicon: List[Tuple[str, str]]):
     with open(filename, "w", encoding="utf-8") as f:
         for word, phones in lexicon:
@@ -78,11 +56,9 @@ def save(filename: str, lexicon: List[Tuple[str, str]]):
 def main():
     us = generate_english_lexicon("us")
     gb = generate_english_lexicon("gb")
-    zh = generate_chinese_lexicon()
 
     save("lexicon-us-en.txt", us)
     save("lexicon-gb-en.txt", gb)
-    save("lexicon-zh.txt", zh)
 
 
 if __name__ == "__main__":

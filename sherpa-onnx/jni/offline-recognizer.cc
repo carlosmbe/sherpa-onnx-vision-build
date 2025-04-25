@@ -174,6 +174,26 @@ static OfflineRecognizerConfig GetOfflineConfig(JNIEnv *env, jobject config) {
   ans.model_config.whisper.tail_paddings =
       env->GetIntField(whisper_config, fid);
 
+  // FireRedAsr
+  fid = env->GetFieldID(model_config_cls, "fireRedAsr",
+                        "Lcom/k2fsa/sherpa/onnx/OfflineFireRedAsrModelConfig;");
+  jobject fire_red_asr_config = env->GetObjectField(model_config, fid);
+  jclass fire_red_asr_config_cls = env->GetObjectClass(fire_red_asr_config);
+
+  fid =
+      env->GetFieldID(fire_red_asr_config_cls, "encoder", "Ljava/lang/String;");
+  s = (jstring)env->GetObjectField(fire_red_asr_config, fid);
+  p = env->GetStringUTFChars(s, nullptr);
+  ans.model_config.fire_red_asr.encoder = p;
+  env->ReleaseStringUTFChars(s, p);
+
+  fid =
+      env->GetFieldID(fire_red_asr_config_cls, "decoder", "Ljava/lang/String;");
+  s = (jstring)env->GetObjectField(fire_red_asr_config, fid);
+  p = env->GetStringUTFChars(s, nullptr);
+  ans.model_config.fire_red_asr.decoder = p;
+  env->ReleaseStringUTFChars(s, p);
+
   // moonshine
   fid = env->GetFieldID(model_config_cls, "moonshine",
                         "Lcom/k2fsa/sherpa/onnx/OfflineMoonshineModelConfig;");
@@ -333,11 +353,19 @@ Java_com_k2fsa_sherpa_onnx_OfflineRecognizer_createStream(JNIEnv * /*env*/,
 
 SHERPA_ONNX_EXTERN_C
 JNIEXPORT void JNICALL Java_com_k2fsa_sherpa_onnx_OfflineRecognizer_decode(
-    JNIEnv * /*env*/, jobject /*obj*/, jlong ptr, jlong streamPtr) {
-  auto recognizer = reinterpret_cast<sherpa_onnx::OfflineRecognizer *>(ptr);
-  auto stream = reinterpret_cast<sherpa_onnx::OfflineStream *>(streamPtr);
+    JNIEnv *env, jobject /*obj*/, jlong ptr, jlong streamPtr) {
+  SafeJNI(env, "OfflineRecognizer_decode", [&] {
+    if (!ValidatePointer(env, ptr, "OfflineRecognizer_decode",
+                         "OfflineRecognizer pointer is null.") ||
+        !ValidatePointer(env, streamPtr, "OfflineRecognizer_decode",
+                         "OfflineStream pointer is null.")) {
+      return;
+    }
 
-  recognizer->DecodeStream(stream);
+    auto recognizer = reinterpret_cast<sherpa_onnx::OfflineRecognizer *>(ptr);
+    auto stream = reinterpret_cast<sherpa_onnx::OfflineStream *>(streamPtr);
+    recognizer->DecodeStream(stream);
+  });
 }
 
 SHERPA_ONNX_EXTERN_C

@@ -389,6 +389,11 @@ SHERPA_ONNX_API typedef struct SherpaOnnxOfflineWhisperModelConfig {
   int32_t tail_paddings;
 } SherpaOnnxOfflineWhisperModelConfig;
 
+SHERPA_ONNX_API typedef struct SherpaOnnxOfflineFireRedAsrModelConfig {
+  const char *encoder;
+  const char *decoder;
+} SherpaOnnxOfflineFireRedAsrModelConfig;
+
 SHERPA_ONNX_API typedef struct SherpaOnnxOfflineMoonshineModelConfig {
   const char *preprocessor;
   const char *encoder;
@@ -432,6 +437,7 @@ SHERPA_ONNX_API typedef struct SherpaOnnxOfflineModelConfig {
   const char *telespeech_ctc;
   SherpaOnnxOfflineSenseVoiceModelConfig sense_voice;
   SherpaOnnxOfflineMoonshineModelConfig moonshine;
+  SherpaOnnxOfflineFireRedAsrModelConfig fire_red_asr;
 } SherpaOnnxOfflineModelConfig;
 
 SHERPA_ONNX_API typedef struct SherpaOnnxOfflineRecognizerConfig {
@@ -483,6 +489,16 @@ SHERPA_ONNX_API void SherpaOnnxDestroyOfflineRecognizer(
 ///         SherpaOnnxDestroyOfflineStream() to free it to avoid memory leak.
 SHERPA_ONNX_API const SherpaOnnxOfflineStream *SherpaOnnxCreateOfflineStream(
     const SherpaOnnxOfflineRecognizer *recognizer);
+
+/// Create an offline stream for accepting wave samples with the specified hot
+/// words.
+///
+/// @param recognizer  A pointer returned by SherpaOnnxCreateOfflineRecognizer()
+/// @return Return a pointer to an OfflineStream. The user has to invoke
+///         SherpaOnnxDestroyOfflineStream() to free it to avoid memory leak.
+SHERPA_ONNX_API const SherpaOnnxOfflineStream *
+SherpaOnnxCreateOfflineStreamWithHotwords(
+    const SherpaOnnxOfflineRecognizer *recognizer, const char *hotwords);
 
 /// Destroy an offline stream.
 ///
